@@ -1,0 +1,11 @@
+{
+  "name": "smart-campus-modulo5",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm --parallel -r run dev",
+    "build": "pnpm -r run build",
+    "test": "pnpm -r run test",
+    "lint": "pnpm -r run lint"
+  },
+  "packageManager": "pnpm@10.27.0"
+}

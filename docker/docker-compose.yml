@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  internship-db:
+    image: postgres:16-alpine
+    container_name: internship-db
+    environment:
+      POSTGRES_DB: internship_db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - internship-data:/var/lib/postgresql/data
+    networks:
+      - modulo5-net
+
+  document-db:
+    image: mongo:7
+    container_name: document-db
+    ports:
+      - "27017:27017"
+    volumes:
+      - document-data:/data/db
+    networks:
+      - modulo5-net
+
+  internship-service:
+    build: ../apps/internship-service
+    container_name: internship-service
+    ports:
+      - "3001:3001"
+    depends_on:
+      - internship-db
+    environment:
+      DB_HOST: internship-db
+      DB_PORT: 5432
+      DB_USER: user
+      DB_PASSWORD: pass
+      DB_NAME: internship_db
+    networks:
+      - modulo5-net
+
+  document-service:
+    build: ../apps/document-service
+    container_name: document-service
+    ports:
+      - "3002:3002"
+    depends_on:
+      - document-db
+    environment:
+      MONGO_URI: mongodb://document-db:27017/document_db
+    networks:
+      - modulo5-net
+
+volumes:
+  internship-data:
+  document-data:
+
+networks:
+  modulo5-net:
+    driver: bridge

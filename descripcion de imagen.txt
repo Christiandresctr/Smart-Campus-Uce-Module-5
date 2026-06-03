@@ -1,0 +1,194 @@
+La imagen parece ser una explicación de una arquitectura DevOps / CI-CD en AWS, mostrando cómo se despliega una aplicación desde el entorno local hasta producción utilizando GitHub, Docker Hub, EC2 y múltiples cuentas de AWS.
+
+Lo que se observa
+1. Desarrollo Local
+
+A la izquierda aparece:
+
+Local
+GitHub
+
+La idea es que el desarrollador trabaja en su máquina local y hace git push al repositorio de GitHub.
+
+2. Flujo de ramas (Git Flow simplificado)
+
+En el centro se observan varias ramas:
+
+feature
+dev
+test
+main
+
+Y también aparecen varias referencias a PR (Pull Request).
+
+Esto indica un flujo parecido a:
+
+feature
+   ↓
+dev
+   ↓ (PR)
+test / QA
+   ↓ (PR)
+main
+   ↓
+producción
+
+Donde:
+
+Los desarrolladores trabajan en ramas feature.
+Se integran en dev.
+Mediante Pull Requests pasan a test o QA.
+Finalmente llegan a main para producción.
+3. GitHub Actions / Workflow
+
+Encima del Account 1 se lee:
+
+Workflow
+
+Esto sugiere que al hacer un merge o push:
+
+Se ejecuta un pipeline de GitHub Actions.
+Se construye una imagen Docker.
+Se publica en Docker Hub.
+Se despliega automáticamente.
+4. Docker Hub
+
+Debajo de GitHub aparece:
+
+DockerHub
+
+Y también:
+
+tag =
+
+Lo que indica:
+
+Se genera una imagen Docker.
+Se etiqueta (tag) con una versión.
+Se almacena en Docker Hub.
+
+Ejemplo:
+
+docker build -t app:v1.0 .
+docker push usuario/app:v1.0
+5. Tres cuentas AWS separadas
+
+En la parte superior aparecen:
+
+Account 1 → Dev
+Account 1
+EC2
+Dev
+Account 2 → QA
+Account 2
+EC2
+QA
+Account 3 → Prod
+Account 3
+EC2
+Prod
+
+La intención es separar los ambientes:
+
+Cuenta AWS	Ambiente
+Account 1	Desarrollo
+Account 2	QA / Testing
+Account 3	Producción
+
+Esto es una práctica común para aislar recursos y evitar que errores de desarrollo afecten producción.
+
+6. Despliegue mediante SSH
+
+A la izquierda del primer EC2 aparece:
+
+SSH
+
+Esto indica que el pipeline se conecta por SSH al servidor EC2 para:
+
+docker pull imagen
+docker stop contenedor
+docker run contenedor
+
+o ejecutar scripts de despliegue.
+
+7. Promoción entre ambientes
+
+Las flechas con "PR" indican:
+
+Dev
+  ↓ PR
+QA
+  ↓ PR
+Prod
+
+Es decir:
+
+Se valida en Desarrollo.
+Se aprueba y pasa a QA.
+Se aprueba nuevamente.
+Se despliega a Producción.
+8. VPCs
+
+A la derecha está escrito:
+
+VPCs
+
+Probablemente el profesor estaba explicando que:
+
+Cada cuenta AWS tiene su propia VPC.
+Cada entorno está aislado a nivel de red.
+
+Ejemplo:
+
+Account 1
+ └─ VPC Dev
+
+Account 2
+ └─ VPC QA
+
+Account 3
+ └─ VPC Prod
+Resumen de la arquitectura completa
+Desarrollador
+      │
+      ▼
+   GitHub
+      │
+      ▼
+ GitHub Actions
+      │
+      ▼
+ Docker Build
+      │
+      ▼
+ Docker Hub
+      │
+      ▼
+ ┌──────────────┐
+ │ AWS Dev EC2  │
+ └──────────────┘
+        │ PR
+        ▼
+ ┌──────────────┐
+ │ AWS QA EC2   │
+ └──────────────┘
+        │ PR
+        ▼
+ ┌──────────────┐
+ │ AWS Prod EC2 │
+ └──────────────┘
+¿Qué estaba enseñando?
+
+Principalmente estaba enseñando:
+
+DevOps
+CI/CD
+Git Flow (feature → dev → test → main)
+GitHub Actions
+Docker y Docker Hub
+AWS EC2
+Multi-Account Strategy en AWS
+Separación de ambientes Dev / QA / Prod
+Despliegues automáticos mediante SSH
+
+Es una arquitectura típica para una materia de Cloud Native, DevOps o Arquitectura de Software en AWS.

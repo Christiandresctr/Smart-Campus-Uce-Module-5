@@ -1,0 +1,81 @@
+ENTREGA DE DOS MICROSERVICIOS DEL PROYECTO FINAL
+Tipo de trabajo: Individual
+Fecha máxima de entrega: Martes 2 de junio de 2026
+Hora límite: 18h00
+1. Descripción de la tarea
+El estudiante deberá entregar dos microservicios funcionales correspondientes al proyecto final de la asignatura Programación Distribuida. Cada microservicio debe evidenciar una implementación técnica coherente con los principios de arquitectura distribuida, separación de responsabilidades, comunicación entre servicios, exposición de APIs y despliegue en ambientes diferenciados.
+La entrega deberá demostrar que los microservicios se encuentran correctamente implementados, probados y desplegados en los ambientes de QA y PRODUCCIÓN, adjuntando evidencias claras de funcionamiento en ambos entornos.
+2. Objetivo de la tarea
+Evaluar la capacidad del estudiante para diseñar, implementar, probar y desplegar microservicios funcionales dentro de una arquitectura distribuida, aplicando buenas prácticas de desarrollo backend, control de versiones, pruebas, documentación técnica y despliegue en ambientes QA y Producción.
+3. Actividades que debe realizar el estudiante
+El estudiante deberá:
+1.	Implementar dos microservicios del proyecto final.
+2.	Exponer endpoints funcionales mediante API REST u otro mecanismo definido en la arquitectura del proyecto.
+3.	Garantizar que cada microservicio tenga una responsabilidad claramente delimitada.
+4.	Implementar conexión a base de datos, servicio externo, cola de mensajes u otro componente distribuido, cuando corresponda.
+5.	Evidenciar la comunicación, integración o independencia funcional de los microservicios.
+6.	Realizar pruebas funcionales de los endpoints principales.
+7.	Desplegar los microservicios en ambiente QA.
+8.	Desplegar los microservicios en ambiente PRODUCCIÓN.
+9.	Adjuntar evidencias de funcionalidad en ambos ambientes.
+10.	Documentar técnicamente la entrega.
+4. Evidencias obligatorias de entrega
+El estudiante deberá entregar un documento o archivo comprimido que incluya:
+a. Repositorio del proyecto
+Debe incluir el enlace al repositorio, preferentemente GitHub, GitLab o Bitbucket, con:
+•	Código fuente de los dos microservicios.
+•	Historial de commits del estudiante.
+•	README técnico.
+•	Archivos de configuración necesarios.
+•	Variables de entorno documentadas, sin exponer credenciales sensibles.
+b. Evidencias del ambiente QA
+El estudiante debe adjuntar:
+•	URL o endpoint funcional del ambiente QA.
+•	Capturas de pantalla de las pruebas realizadas.
+•	Evidencia de consumo de endpoints mediante Postman, Insomnia, Swagger, navegador o herramienta equivalente.
+•	Evidencia de respuesta correcta de los servicios.
+•	Logs o registros básicos que demuestren ejecución satisfactoria.
+c. Evidencias del ambiente PRODUCCIÓN
+El estudiante debe adjuntar:
+•	URL o endpoint funcional del ambiente de producción.
+•	Capturas de pantalla de pruebas realizadas.
+•	Evidencia de consumo de endpoints.
+•	Evidencia de que los servicios responden correctamente.
+•	Evidencia de despliegue estable y diferenciado respecto al ambiente QA.
+d. Documentación técnica mínima
+El documento de entrega debe contener:
+•	Nombre del proyecto final.
+•	Nombre del estudiante.
+•	Descripción general de los dos microservicios.
+•	Responsabilidad funcional de cada microservicio.
+•	Tecnologías utilizadas.
+•	Arquitectura general de la solución.
+•	Endpoints principales.
+•	Evidencias de pruebas.
+•	Evidencias de despliegue en QA y Producción.
+•	Problemas encontrados y soluciones aplicadas.
+•	Conclusiones técnicas.
+5. Condiciones de entrega
+•	La tarea es individual.
+•	No se aceptarán entregas grupales.
+•	Los dos microservicios deben corresponder al proyecto final del estudiante.
+•	La entrega debe realizarse hasta el martes 2 de junio de 2026, a las 18h00.
+•	Las evidencias deben ser claras, verificables y estar correctamente organizadas.
+•	No se considerará como entrega completa un microservicio que solo esté desarrollado localmente sin evidencia de despliegue.
+•	No se deben incluir contraseñas, tokens, claves privadas ni credenciales en el repositorio o documento de entrega.
+6. Producto final esperado
+Al finalizar la tarea, el estudiante deberá demostrar que cuenta con dos microservicios funcionales, desplegados y probados en los ambientes QA y Producción, con documentación técnica suficiente para validar su arquitectura, funcionamiento e integración dentro del proyecto final.
+Rúbrica de evaluación
+Criterio de evaluación	Descripción técnica	Puntaje
+Implementación funcional del primer microservicio	El primer microservicio cumple con una responsabilidad específica del proyecto, expone endpoints funcionales, procesa correctamente las operaciones definidas y responde de manera consistente.	3 puntos
+Implementación funcional del segundo microservicio	El segundo microservicio cumple con una responsabilidad diferenciada, presenta lógica funcional propia y evidencia independencia o integración adecuada dentro de la arquitectura distribuida.	3 puntos
+Arquitectura distribuida y separación de responsabilidades	Los microservicios presentan bajo acoplamiento, alta cohesión, estructura clara por capas o componentes, y una separación adecuada entre lógica de negocio, controladores, servicios, persistencia y configuración.	3 puntos
+Evidencias de funcionalidad en ambiente QA	Se adjuntan evidencias claras del despliegue y funcionamiento en QA, incluyendo URLs, capturas, pruebas de endpoints, respuestas del sistema y validación del comportamiento esperado.	2 puntos
+Evidencias de funcionalidad en ambiente PRODUCCIÓN	Se adjuntan evidencias claras del despliegue y funcionamiento en Producción, diferenciadas del ambiente QA, con pruebas verificables de disponibilidad y respuesta de los microservicios.	2 puntos
+Pruebas funcionales y validación de endpoints	Se presentan pruebas mediante Postman, Insomnia, Swagger, curl u otra herramienta equivalente, demostrando operaciones exitosas, manejo básico de errores y validación de respuestas.	2 puntos
+Documentación técnica de la entrega	La documentación describe adecuadamente la arquitectura, tecnologías, endpoints, responsabilidades de los servicios, configuración de ambientes, evidencias, problemas encontrados y conclusiones técnicas.	2 puntos
+Uso de control de versiones y buenas prácticas de repositorio	El repositorio presenta estructura ordenada, commits significativos, README técnico, exclusión de credenciales sensibles y archivos de configuración correctamente organizados.	1 punto
+Despliegue, configuración y diferenciación de ambientes	Se evidencia una configuración diferenciada entre QA y Producción, manejo adecuado de variables de entorno, despliegue estable y consistencia entre código, configuración y ambiente de ejecución.	1 punto
+Presentación, orden y cumplimiento de la entrega	La entrega está organizada, es comprensible, cumple con la fecha y hora establecidas, y presenta evidencias completas sin inconsistencias relevantes.	1 punto
+Total		20 puntos
+
