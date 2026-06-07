@@ -24,9 +24,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'pnpm'
-          cache-dependency-path: apps/${{ matrix.service }}/pnpm-lock.yaml
-
+          
       - name: Install dependencies
         run: pnpm install
         working-directory: apps/${{ matrix.service }}
