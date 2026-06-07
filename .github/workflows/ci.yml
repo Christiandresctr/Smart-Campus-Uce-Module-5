@@ -17,18 +17,24 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 10
+
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: 'pnpm'
+          cache-dependency-path: apps/${{ matrix.service }}/pnpm-lock.yaml
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install
         working-directory: apps/${{ matrix.service }}
 
       - name: Build
-        run: npm run build
+        run: pnpm run build
         working-directory: apps/${{ matrix.service }}
 
       - name: Run tests
-        run: npm test
+        run: pnpm test
         working-directory: apps/${{ matrix.service }}
