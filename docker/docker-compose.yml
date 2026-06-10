@@ -42,7 +42,9 @@ services:
       - modulo5-net
 
   document-service:
-    build: ../apps/document-service
+    build:
+      context: ..
+      dockerfile: apps/document-service/Dockerfile
     container_name: document-service
     ports:
       - "3002:3002"

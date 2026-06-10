@@ -24,16 +24,16 @@ jobs:
       - name: Build and push internship-service
         uses: docker/build-push-action@v5
         with:
-          context: apps/internship-service
+          context: .
+          file: apps/internship-service/Dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/internship-service:latest
 
       - name: Build and push document-service
         uses: docker/build-push-action@v5
         with:
-          context: apps/document-service
+          context: .
+          file: apps/document-service/Dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/document-service:latest
 
       - name: Deploy to AWS
         uses: appleboy/ssh-action@v1.0.3
