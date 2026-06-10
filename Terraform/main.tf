@@ -117,8 +117,8 @@ resource "aws_security_group" "ec2" {
 
   ingress {
     description = "Document Service"
-    from_port   = 3002
-    to_port     = 3002
+    from_port   = 81
+    to_port     = 81
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
