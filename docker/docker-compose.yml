@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   internship-db:
     image: postgres:16-alpine
@@ -26,7 +24,7 @@ services:
       - modulo5-net
 
   internship-service:
-    build: ../apps/internship-service
+    image: camaisincho/internship-service:latest
     container_name: internship-service
     ports:
       - "3001:3001"
@@ -42,9 +40,7 @@ services:
       - modulo5-net
 
   document-service:
-    build:
-      context: ..
-      dockerfile: apps/document-service/Dockerfile
+    image: camaisincho/document-service:latest
     container_name: document-service
     ports:
       - "3002:3002"
