@@ -27,7 +27,7 @@ services:
     image: camaisincho/internship-service:latest
     container_name: internship-service
     ports:
-      - "3001:3001"
+      - "80:3001"
     depends_on:
       - internship-db
     environment:
@@ -43,7 +43,7 @@ services:
     image: camaisincho/document-service:latest
     container_name: document-service
     ports:
-      - "3002:3002"
+      - "81:3002"
     depends_on:
       - document-db
     environment:
