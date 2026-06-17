@@ -51,29 +51,34 @@ jobs:
             docker run -d --name internship-service -p 3001:3001 ${{ secrets.DOCKER_USERNAME }}/internship-service:latest
             docker run -d --name document-service -p 3002:3002 ${{ secrets.DOCKER_USERNAME }}/document-service:latest
 
-      - name: Login to Jira
-        uses: atlassian/gajira-login@v3
+      - name: Transition Jira issue
         env:
-          JIRA_BASE_URL: ${{ secrets.JIRA_URL }}
-          JIRA_USER_EMAIL: ${{ secrets.JIRA_EMAIL }}
-          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
-
-      - name: Find issue key in PR title
-        id: find
-        env:
-          MSG: ${{ github.event.pull_request.title }}
+          JIRA_URL: ${{ secrets.JIRA_URL }}
+          JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
+          JIRA_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+          TARGET_BRANCH: ${{ github.event.pull_request.base.ref }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
         run: |
-          echo "issue=$(echo "$MSG" | grep -oE '[A-Z][A-Z0-9]+-[0-9]+' | head -1)" >> $GITHUB_OUTPUT
-      - name: Transition to In Review (merge a test)
-        if: steps.find.outputs.issue && github.event.pull_request.base.ref == 'test'
-        uses: atlassian/gajira-transition@v3
-        with:
-          issue: ${{ steps.find.outputs.issue }}
-          transition: "En revisión"
-
-      - name: Transition to Listo (merge a main)
-        if: steps.find.outputs.issue && github.event.pull_request.base.ref == 'main'
-        uses: atlassian/gajira-transition@v3
-        with:
-          issue: ${{ steps.find.outputs.issue }}
-          transition: "Listo"
+          ISSUE_KEY=$(echo "$PR_TITLE" | grep -oE '[A-Z][A-Z0-9]+-[0-9]+' | head -1)
+          if [ -z "$ISSUE_KEY" ]; then
+            echo "No issue key found in PR title"
+            exit 0
+          fi
+          echo "Found issue: $ISSUE_KEY"
+          
+          if [ "$TARGET_BRANCH" = "test" ]; then
+            TRANSITION="En revisión"
+          elif [ "$TARGET_BRANCH" = "main" ]; then
+            TRANSITION="Listo"
+          else
+            echo "Unknown target branch: $TARGET_BRANCH"
+            exit 0
+          fi
+          
+          echo "Transitioning to: $TRANSITION"
+          RESP=$(curl -s -o /dev/null -w "%{http_code}" -u "$JIRA_EMAIL:$JIRA_TOKEN" \
+            -X POST \
+            -H "Content-Type: application/json" \
+            "$JIRA_URL/rest/api/2/issue/$ISSUE_KEY/transitions" \
+            -d "{\"transition\": {\"name\": \"$TRANSITION\"}}")
+          echo "HTTP status: $RESP"

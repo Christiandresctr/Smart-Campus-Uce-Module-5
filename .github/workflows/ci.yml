@@ -41,24 +41,30 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build-and-test]
     if: github.event_name == 'push'
+    
     steps:
-      - name: Login to Jira
-        uses: atlassian/gajira-login@v3
+      - name: Transition Jira issue to En curso
         env:
-          JIRA_BASE_URL: ${{ secrets.JIRA_URL }}
-          JIRA_USER_EMAIL: ${{ secrets.JIRA_EMAIL }}
-          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
-
-      - name: Find issue key in commit
-        id: find
-        env:
-          MSG: ${{ github.event.head_commit.message }}
+          JIRA_URL: ${{ secrets.JIRA_URL }}
+          JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
+          JIRA_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
         run: |
-          echo "issue=$(echo "$MSG" | grep -oE '[A-Z][A-Z0-9]+-[0-9]+' | head -1)" >> $GITHUB_OUTPUT
-
-      - name: Transition to En curso
-        if: steps.find.outputs.issue
-        uses: atlassian/gajira-transition@v3
-        with:
-          issue: ${{ steps.find.outputs.issue }}
-          transition: "En curso"
+          ISSUE_KEY=$(echo "$COMMIT_MSG" | grep -oE '[A-Z][A-Z0-9]+-[0-9]+' | head -1)
+          if [ -z "$ISSUE_KEY" ]; then
+            echo "No issue key found in commit message"
+            exit 0
+          fi
+          echo "Found issue: $ISSUE_KEY"
+          
+          echo "Available transitions:"
+          curl -s -u "$JIRA_EMAIL:$JIRA_TOKEN" \
+            "$JIRA_URL/rest/api/2/issue/$ISSUE_KEY/transitions" | jq .
+          
+          echo "Transitioning to En curso..."
+          RESP=$(curl -s -o /dev/null -w "%{http_code}" -u "$JIRA_EMAIL:$JIRA_TOKEN" \
+            -X POST \
+            -H "Content-Type: application/json" \
+            "$JIRA_URL/rest/api/2/issue/$ISSUE_KEY/transitions" \
+            -d '{"transition": {"name": "En curso"}}')
+          echo "HTTP status: $RESP"
