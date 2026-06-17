@@ -60,16 +60,16 @@ jobs:
 
       - name: Find issue key in PR title
         id: find
-        uses: atlassian/gajira-find-issue-key@v3
-        with:
-          string: ${{ github.event.pull_request.title }}
-
+        env:
+          MSG: ${{ github.event.pull_request.title }}
+        run: |
+          echo "issue=$(echo "$MSG" | grep -oE '[A-Z][A-Z0-9]+-[0-9]+' | head -1)" >> $GITHUB_OUTPUT
       - name: Transition to In Review (merge a test)
         if: steps.find.outputs.issue && github.event.pull_request.base.ref == 'test'
         uses: atlassian/gajira-transition@v3
         with:
           issue: ${{ steps.find.outputs.issue }}
-          transition: "In Review"
+          transition: "En revisión"
 
       - name: Transition to Listo (merge a main)
         if: steps.find.outputs.issue && github.event.pull_request.base.ref == 'main'
