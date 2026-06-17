@@ -50,3 +50,30 @@ jobs:
             docker rm document-service || true
             docker run -d --name internship-service -p 3001:3001 ${{ secrets.DOCKER_USERNAME }}/internship-service:latest
             docker run -d --name document-service -p 3002:3002 ${{ secrets.DOCKER_USERNAME }}/document-service:latest
+
+      - name: Login to Jira
+        uses: atlassian/gajira-login@v3
+        env:
+          JIRA_BASE_URL: ${{ secrets.JIRA_URL }}
+          JIRA_USER_EMAIL: ${{ secrets.JIRA_EMAIL }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+
+      - name: Find issue key in PR title
+        id: find
+        uses: atlassian/gajira-find-issue-key@v3
+        with:
+          string: ${{ github.event.pull_request.title }}
+
+      - name: Transition to In Review (merge a test)
+        if: steps.find.outputs.issue && github.event.pull_request.base.ref == 'test'
+        uses: atlassian/gajira-transition@v3
+        with:
+          issue: ${{ steps.find.outputs.issue }}
+          transition: "In Review"
+
+      - name: Transition to Listo (merge a main)
+        if: steps.find.outputs.issue && github.event.pull_request.base.ref == 'main'
+        uses: atlassian/gajira-transition@v3
+        with:
+          issue: ${{ steps.find.outputs.issue }}
+          transition: "Listo"

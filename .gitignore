@@ -10,3 +10,7 @@ Terraform/.terraform/
 Terraform/terraform.tfstate
 Terraform/terraform.tfstate.backup
 Terraform/modulo5-key.pem
+
+*.ps1
+*.csv
+*.xlsx
