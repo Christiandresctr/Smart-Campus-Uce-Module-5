@@ -67,9 +67,9 @@ jobs:
           echo "Found issue: $ISSUE_KEY"
           
           if [ "$TARGET_BRANCH" = "test" ]; then
-            TRANSITION="En revisión"
+            TRANSITION="31"
           elif [ "$TARGET_BRANCH" = "main" ]; then
-            TRANSITION="Listo"
+            TRANSITION="41"
           else
             echo "Unknown target branch: $TARGET_BRANCH"
             exit 0
@@ -80,5 +80,5 @@ jobs:
             -X POST \
             -H "Content-Type: application/json" \
             "$JIRA_URL/rest/api/2/issue/$ISSUE_KEY/transitions" \
-            -d "{\"transition\": {\"name\": \"$TRANSITION\"}}")
+            -d "{\"transition\": {\"id\": \"$TRANSITION\"}}")
           echo "HTTP status: $RESP"
