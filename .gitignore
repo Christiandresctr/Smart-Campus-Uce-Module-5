@@ -14,3 +14,4 @@ Terraform/modulo5-key.pem
 *.ps1
 *.csv
 *.xlsx
+*.txt
