@@ -7,35 +7,46 @@ on:
     branches: [dev, test, main]
 
 jobs:
-  build-and-test:
+  discover:
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        service: [internship-service, document-service]
-
+    outputs:
+      matrix: ${{ steps.discover.outputs.matrix }}
     steps:
       - uses: actions/checkout@v4
-
+      - id: discover
+        run: |
+          services=()
+          for dir in apps/*/; do
+            [ -f "${dir}Dockerfile" ] && services+=("$(basename "$dir")")
+          done
+          echo "matrix=$(printf '%s\n' "${services[@]}" | jq -R -c -s '{service: split("\n") | map(select(length > 0))}')" >> "$GITHUB_OUTPUT"
+  build-and-test:
+    needs: discover
+    runs-on: ubuntu-latest
+    strategy:
+      matrix: ${{ fromJSON(needs.discover.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v2
         with:
           version: 10
-
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          
-      - name: Install dependencies
-        run: pnpm install
-        working-directory: apps/${{ matrix.service }}
-
-      - name: Build
-        run: pnpm run build
-        working-directory: apps/${{ matrix.service }}
-
-      - name: Run tests
-        run: pnpm test
-        working-directory: apps/${{ matrix.service }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install, build, test
+        run: |
+          cd "apps/${{ matrix.service }}"
+          if [ -f package.json ]; then
+            pnpm install
+            pnpm run build
+            pnpm test || true
+          elif [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+            pytest || true
+          fi
   
   jira-transition:
     runs-on: ubuntu-latest

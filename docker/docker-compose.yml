@@ -51,9 +51,40 @@ services:
     networks:
       - modulo5-net
 
+  approval-workflow-db:
+    image: postgres:16-alpine
+    container_name: approval-workflow-db
+    environment:
+      POSTGRES_DB: approval_db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+    ports:
+      - "5433:5432"
+    volumes:
+      - approval-data:/var/lib/postgresql/data
+    networks:
+      - modulo5-net
+
+  approval-workflow:
+    image: camaisincho/approval-workflow:latest
+    container_name: approval-workflow
+    ports:
+      - "82:3003"
+    depends_on:
+      - approval-workflow-db
+    environment:
+      DB_HOST: approval-workflow-db
+      DB_PORT: 5432
+      DB_USER: user
+      DB_PASSWORD: pass
+      DB_NAME: approval_db
+    networks:
+      - modulo5-net
+
 volumes:
   internship-data:
   document-data:
+  approval-data:
 
 networks:
   modulo5-net:
