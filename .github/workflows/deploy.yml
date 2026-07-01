@@ -37,23 +37,26 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/document-service:latest
 
-      - name: Set deploy target
-        id: deploy-target
-        run: |
-          if [ "${{ github.event.pull_request.base.ref }}" = "test" ]; then
-            echo "host=${{ secrets.AWS_HOST_QA }}" >> $GITHUB_OUTPUT
-            echo "key=${{ secrets.AWS_SSH_KEY_QA }}" >> $GITHUB_OUTPUT
-          elif [ "${{ github.event.pull_request.base.ref }}" = "main" ]; then
-            echo "host=${{ secrets.AWS_HOST_PROD }}" >> $GITHUB_OUTPUT
-            echo "key=${{ secrets.AWS_SSH_KEY_PROD }}" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Deploy via SSH
+      - name: Deploy to QA
+        if: github.event.pull_request.base.ref == 'test'
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ steps.deploy-target.outputs.host }}
+          host: ${{ secrets.AWS_HOST_QA }}
           username: ec2-user
-          key: ${{ steps.deploy-target.outputs.key }}
+          key: ${{ secrets.AWS_SSH_KEY_QA }}
+          script: |
+            docker pull ${{ secrets.DOCKER_USERNAME }}/internship-service:latest
+            docker pull ${{ secrets.DOCKER_USERNAME }}/document-service:latest
+            docker-compose -f ~/docker-compose.yml down || true
+            docker-compose -f ~/docker-compose.yml up -d
+
+      - name: Deploy to Prod
+        if: github.event.pull_request.base.ref == 'main'
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.AWS_HOST_PROD }}
+          username: ec2-user
+          key: ${{ secrets.AWS_SSH_KEY_PROD }}
           script: |
             docker pull ${{ secrets.DOCKER_USERNAME }}/internship-service:latest
             docker pull ${{ secrets.DOCKER_USERNAME }}/document-service:latest
