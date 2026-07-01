@@ -1,47 +1,36 @@
-# Generar llave SSH con Terraform
+# Generar llave SSH
 resource "tls_private_key" "modulo5" {
   algorithm = "RSA"
   rsa_bits  = 4096
 }
 
-# Buscar la última AMI de Amazon Linux 2
-data "aws_ami" "amazon_linux" {
-  most_recent = true
-  owners      = ["amazon"]
-
-  filter {
-    name   = "name"
-    values = ["al2023-ami-*-x86_64"]
-  }
-
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
+# Buscar AMI Amazon Linux 2023
+variable "ami_id" {
+  description = "AMI Amazon Linux 2023 us-east-1"
+  type        = string
+  default     = "ami-06067086cf86c58e6"
 }
 
-# Crear Key Pair en AWS
+# Key Pair
 resource "aws_key_pair" "modulo5" {
   key_name   = var.key_name
   public_key = tls_private_key.modulo5.public_key_openssh
 }
 
-# Guardar la llave privada en tu computadora
+# Guardar llave privada
 resource "local_file" "private_key" {
-  content  = tls_private_key.modulo5.private_key_pem
-  filename = "${path.module}/modulo5-key.pem"
+  content         = tls_private_key.modulo5.private_key_pem
+  filename        = "${path.module}/modulo5-key.pem"
   file_permission = "0600"
 }
 
-# Crear VPC
+# VPC
 resource "aws_vpc" "main" {
   cidr_block           = "10.0.0.0/16"
   enable_dns_support   = true
   enable_dns_hostnames = true
 
-  tags = {
-    Name = "modulo5-vpc-${var.environment}"
-  }
+  tags = { Name = "modulo5-vpc-${var.environment}" }
 }
 
 # Subnet pública
@@ -51,18 +40,13 @@ resource "aws_subnet" "public" {
   map_public_ip_on_launch = true
   availability_zone       = "${var.aws_region}a"
 
-  tags = {
-    Name = "modulo5-subnet-public-${var.environment}"
-  }
+  tags = { Name = "modulo5-subnet-public-${var.environment}" }
 }
 
 # Internet Gateway
 resource "aws_internet_gateway" "igw" {
   vpc_id = aws_vpc.main.id
-
-  tags = {
-    Name = "modulo5-igw-${var.environment}"
-  }
+  tags   = { Name = "modulo5-igw-${var.environment}" }
 }
 
 # Route Table
@@ -74,12 +58,9 @@ resource "aws_route_table" "public" {
     gateway_id = aws_internet_gateway.igw.id
   }
 
-  tags = {
-    Name = "modulo5-rt-public-${var.environment}"
-  }
+  tags = { Name = "modulo5-rt-public-${var.environment}" }
 }
 
-# Asociar subnet con route table
 resource "aws_route_table_association" "public" {
   subnet_id      = aws_subnet.public.id
   route_table_id = aws_route_table.public.id
@@ -88,7 +69,7 @@ resource "aws_route_table_association" "public" {
 # Security Group
 resource "aws_security_group" "ec2" {
   name        = "modulo5-sg-${var.environment}"
-  description = "Permitir SSH, HTTP y puertos de servicios"
+  description = "Puertos para servicios del modulo 5"
   vpc_id      = aws_vpc.main.id
 
   ingress {
@@ -100,17 +81,9 @@ resource "aws_security_group" "ec2" {
   }
 
   ingress {
-    description = "HTTP"
+    description = "HTTP / NGINX"
     from_port   = 80
     to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    description = "Internship Service"
-    from_port   = 3001
-    to_port     = 3001
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
@@ -148,7 +121,7 @@ resource "aws_security_group" "ec2" {
   }
 
   ingress {
-    description = "RabbitMQ Management"
+    description = "RabbitMQ Management UI"
     from_port   = 15672
     to_port     = 15672
     protocol    = "tcp"
@@ -186,14 +159,12 @@ resource "aws_security_group" "ec2" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  tags = {
-    Name = "modulo5-sg-${var.environment}"
-  }
+  tags = { Name = "modulo5-sg-${var.environment}" }
 }
 
 # EC2 Instance
 resource "aws_instance" "app" {
-  ami                    = data.aws_ami.amazon_linux.id
+  ami                    = var.ami_id
   instance_type          = var.instance_type
   key_name               = aws_key_pair.modulo5.key_name
   subnet_id              = aws_subnet.public.id

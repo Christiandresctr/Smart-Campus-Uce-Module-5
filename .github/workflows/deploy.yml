@@ -35,21 +35,28 @@ jobs:
           file: apps/document-service/Dockerfile
           push: true
 
-      - name: Deploy to AWS
+      - name: Set deploy target
+        id: deploy-target
+        run: |
+          if [ "${{ github.event.pull_request.base.ref }}" = "test" ]; then
+            echo "host=${{ secrets.AWS_HOST_QA }}" >> $GITHUB_OUTPUT
+            echo "key=${{ secrets.AWS_SSH_KEY_QA }}" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event.pull_request.base.ref }}" = "main" ]; then
+            echo "host=${{ secrets.AWS_HOST_PROD }}" >> $GITHUB_OUTPUT
+            echo "key=${{ secrets.AWS_SSH_KEY_PROD }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.AWS_HOST }}
+          host: ${{ steps.deploy-target.outputs.host }}
           username: ec2-user
-          key: ${{ secrets.AWS_SSH_KEY }}
+          key: ${{ steps.deploy-target.outputs.key }}
           script: |
             docker pull ${{ secrets.DOCKER_USERNAME }}/internship-service:latest
             docker pull ${{ secrets.DOCKER_USERNAME }}/document-service:latest
-            docker stop internship-service || true
-            docker rm internship-service || true
-            docker stop document-service || true
-            docker rm document-service || true
-            docker run -d --name internship-service -p 3001:3001 ${{ secrets.DOCKER_USERNAME }}/internship-service:latest
-            docker run -d --name document-service -p 3002:3002 ${{ secrets.DOCKER_USERNAME }}/document-service:latest
+            docker-compose -f ~/docker-compose.yml down || true
+            docker-compose -f ~/docker-compose.yml up -d
 
       - name: Transition Jira issue
         env:
