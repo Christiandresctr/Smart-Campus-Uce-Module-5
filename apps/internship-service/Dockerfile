@@ -7,7 +7,7 @@ COPY apps/internship-service/ ./apps/internship-service/
 
 RUN pnpm install --frozen-lockfile
 RUN pnpm --filter internship-service run build
-RUN pnpm deploy --filter internship-service /tmp/deploy
+RUN pnpm deploy --legacy --filter internship-service /tmp/deploy
 RUN cp -r apps/internship-service/dist /tmp/deploy/dist
 
 FROM node:20-alpine

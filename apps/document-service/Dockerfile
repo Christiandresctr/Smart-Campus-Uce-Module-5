@@ -7,7 +7,7 @@ COPY apps/document-service/ ./apps/document-service/
 
 RUN pnpm install --frozen-lockfile
 RUN pnpm --filter document-service run build
-RUN pnpm deploy --filter document-service /tmp/deploy
+RUN pnpm deploy --legacy --filter document-service /tmp/deploy
 RUN cp -r apps/document-service/dist /tmp/deploy/dist
 
 FROM node:20-alpine
