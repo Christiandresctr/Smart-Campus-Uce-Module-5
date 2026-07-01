@@ -20,7 +20,7 @@ jobs:
           for dir in apps/*/; do
             [ -f "${dir}Dockerfile" ] && services+=("$(basename "$dir")")
           done
-          printf '%s\n' "${services[@]}" | jq -R . | jq -s '{include: [.[] | {service: .}]}' > /tmp/matrix.json
+          printf '%s\n' "${services[@]}" | jq -R -c -s '{include: [.[] | {service: .}]}' > /tmp/matrix.json
           echo "matrix=$(cat /tmp/matrix.json)" >> "$GITHUB_OUTPUT"
 
   build-and-push:
