@@ -81,10 +81,38 @@ services:
     networks:
       - modulo5-net
 
+  report-db:
+    image: postgres:16-alpine
+    container_name: report-db
+    environment:
+      POSTGRES_DB: report_hours_db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+    ports:
+      - "5434:5432"
+    volumes:
+      - report-data:/var/lib/postgresql/data
+    networks:
+      - modulo5-net
+
+  report-hours:
+    build: ../apps/report-hours
+    image: camaisincho/report-hours:latest
+    container_name: report-hours
+    ports:
+      - "83:3004"
+    depends_on:
+      - report-db
+    environment:
+      DATABASE_URL: postgresql://user:pass@report-db:5432/report_hours_db
+    networks:
+      - modulo5-net
+
 volumes:
   internship-data:
   document-data:
   approval-data:
+  report-data:
 
 networks:
   modulo5-net:
