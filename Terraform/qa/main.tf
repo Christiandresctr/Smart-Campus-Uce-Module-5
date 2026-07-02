@@ -97,6 +97,14 @@ resource "aws_security_group" "ec2" {
   }
 
   ingress {
+  description = "Approval Workflow + futuros servicios"
+  from_port   = 82
+  to_port     = 89
+  protocol    = "tcp"
+  cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
     description = "Microservicios (3001-3011)"
     from_port   = 3001
     to_port     = 3011
@@ -166,9 +174,11 @@ resource "aws_security_group" "ec2" {
 resource "aws_instance" "app" {
   ami                    = var.ami_id
   instance_type          = var.instance_type
+  user_data_replace_on_change   = false
   key_name               = aws_key_pair.modulo5.key_name
   subnet_id              = aws_subnet.public.id
   vpc_security_group_ids = [aws_security_group.ec2.id]
+  
 
   user_data = <<-EOF
     #!/bin/bash

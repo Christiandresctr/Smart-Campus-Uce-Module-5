@@ -153,4 +153,4 @@ src/
 
 📝 Licencia
 
-Proyecto académico — Universidad Central del Ecuador
+Proyecto académico Universitario — Universidad Central del Ecuador.

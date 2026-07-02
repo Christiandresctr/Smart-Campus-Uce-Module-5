@@ -4,22 +4,6 @@ resource "tls_private_key" "modulo5" {
   rsa_bits  = 4096
 }
 
-# Buscar la última AMI de Amazon Linux 2
-data "aws_ami" "amazon_linux" {
-  most_recent = true
-  owners      = ["amazon"]
-
-  filter {
-    name   = "name"
-    values = ["al2023-ami-*-x86_64"]
-  }
-
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
-}
-
 # Crear Key Pair en AWS
 resource "aws_key_pair" "modulo5" {
   key_name   = var.key_name
@@ -124,6 +108,14 @@ resource "aws_security_group" "ec2" {
   }
 
   ingress {
+  description = "Approval Workflow + futuros servicios"
+  from_port   = 82
+  to_port     = 89
+  protocol    = "tcp"
+  cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
     description = "Microservicios (3001-3011)"
     from_port   = 3001
     to_port     = 3011
@@ -193,11 +185,12 @@ resource "aws_security_group" "ec2" {
 
 # EC2 Instance
 resource "aws_instance" "app" {
-  ami                    = data.aws_ami.amazon_linux.id
+  ami                    = var.ami_id
   instance_type          = var.instance_type
   key_name               = aws_key_pair.modulo5.key_name
   subnet_id              = aws_subnet.public.id
   vpc_security_group_ids = [aws_security_group.ec2.id]
+   user_data_replace_on_change   = false
 
   user_data = <<-EOF
     #!/bin/bash
