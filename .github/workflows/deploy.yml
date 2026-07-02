@@ -53,8 +53,8 @@ jobs:
           username: ec2-user
           key: ${{ github.event.pull_request.base.ref == 'test' && secrets.AWS_SSH_KEY_QA || secrets.AWS_SSH_KEY_PROD }}
           script: |
-            docker compose -f ~/docker-compose.yml pull
-            docker compose -f ~/docker-compose.yml up -d
+            docker-compose -f ~/docker-compose.yml pull
+            docker-compose -f ~/docker-compose.yml up -d
 
       - name: Transition Jira issue
         env:
