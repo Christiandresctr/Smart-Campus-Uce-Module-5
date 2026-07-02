@@ -21,3 +21,9 @@ variable "key_name" {
   type        = string
   default     = "modulo5-key"
 }
+
+variable "ami_id" {
+  description = "AMI Amazon Linux 2023 us-east-1"
+  type        = string
+  default     = "ami-06067086cf86c58e6"
+}

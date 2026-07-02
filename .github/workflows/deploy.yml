@@ -4,6 +4,7 @@ on:
   pull_request:
     types: [closed]
     branches:
+      - dev
       - test
       - main
 
@@ -47,22 +48,37 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      
+      - name: Set environment variables          
+        id: env
+        run: |
+          BRANCH="${{ github.event.pull_request.base.ref }}"
+          if [ "$BRANCH" = "dev" ]; then
+            echo "HOST=${{ secrets.AWS_HOST_DEV }}" >> $GITHUB_OUTPUT
+            echo "KEY=${{ secrets.AWS_SSH_KEY_DEV }}" >> $GITHUB_OUTPUT
+          elif [ "$BRANCH" = "test" ]; then
+            echo "HOST=${{ secrets.AWS_HOST_QA }}" >> $GITHUB_OUTPUT
+            echo "KEY=${{ secrets.AWS_SSH_KEY_QA }}" >> $GITHUB_OUTPUT
+          elif [ "$BRANCH" = "main" ]; then
+            echo "HOST=${{ secrets.AWS_HOST_PROD }}" >> $GITHUB_OUTPUT
+            echo "KEY=${{ secrets.AWS_SSH_KEY_PROD }}" >> $GITHUB_OUTPUT
+          fi
 
       - name: Copy docker-compose.yml to server
         uses: appleboy/scp-action@v0.1.7
         with:
-          host: ${{ github.event.pull_request.base.ref == 'test' && secrets.AWS_HOST_QA || secrets.AWS_HOST_PROD }}
+          host: ${{ steps.env.outputs.HOST }}
           username: ec2-user
-          key: ${{ github.event.pull_request.base.ref == 'test' && secrets.AWS_SSH_KEY_QA || secrets.AWS_SSH_KEY_PROD }}
+          key: ${{ steps.env.outputs.KEY }}
           source: "docker/docker-compose.yml"
           target: "~/"
 
       - name: Deploy
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ github.event.pull_request.base.ref == 'test' && secrets.AWS_HOST_QA || secrets.AWS_HOST_PROD }}
+          host: ${{ steps.env.outputs.HOST }}
           username: ec2-user
-          key: ${{ github.event.pull_request.base.ref == 'test' && secrets.AWS_SSH_KEY_QA || secrets.AWS_SSH_KEY_PROD }}
+          key: ${{ steps.env.outputs.KEY }}
           script: |
             docker-compose -f ~/docker/docker-compose.yml pull
             docker-compose -f ~/docker/docker-compose.yml up -d
@@ -82,7 +98,9 @@ jobs:
           fi
           echo "Found issue: $ISSUE_KEY"
           
-          if [ "$TARGET_BRANCH" = "test" ]; then
+          if [ "$TARGET_BRANCH" = "dev" ]; then
+            TRANSITION="21"
+          elif [ "$TARGET_BRANCH" = "test" ]; then
             TRANSITION="31"
           elif [ "$TARGET_BRANCH" = "main" ]; then
             TRANSITION="41"

@@ -20,6 +20,7 @@ jobs:
             [ -f "${dir}Dockerfile" ] && services+=("$(basename "$dir")")
           done
           echo "matrix=$(printf '%s\n' "${services[@]}" | jq -R -c -s '{service: split("\n") | map(select(length > 0))}')" >> "$GITHUB_OUTPUT"
+          
   build-and-test:
     needs: discover
     runs-on: ubuntu-latest

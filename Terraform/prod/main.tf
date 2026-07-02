@@ -216,6 +216,7 @@ resource "aws_launch_template" "app" {
   instance_type = var.instance_type
   key_name      = aws_key_pair.modulo5.key_name
   vpc_security_group_ids = [aws_security_group.ec2.id]
+  
 
   user_data = base64encode(<<-EOF
     #!/bin/bash
@@ -264,6 +265,7 @@ resource "aws_instance" "deploy" {
   key_name               = aws_key_pair.modulo5.key_name
   subnet_id              = aws_subnet.public_a.id
   vpc_security_group_ids = [aws_security_group.ec2.id]
+  user_data_replace_on_change = false
 
   user_data = <<-EOF
     #!/bin/bash
