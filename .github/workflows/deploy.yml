@@ -65,9 +65,9 @@ jobs:
           key: ${{ github.event.pull_request.base.ref == 'dev' && secrets.AWS_SSH_KEY_DEV || github.event.pull_request.base.ref == 'test' && secrets.AWS_SSH_KEY_QA || secrets.AWS_SSH_KEY_PROD }}
           script: |
             cd ~/docker
-            docker compose -p modulo5 down --remove-orphans
-            docker compose -p modulo5 pull
-            docker compose -p modulo5 up -d
+            docker-compose -p modulo5 down --remove-orphans
+            docker-compose -p modulo5 pull
+            docker-compose -p modulo5 up -d
 
       - name: Transition Jira issue
         env:
