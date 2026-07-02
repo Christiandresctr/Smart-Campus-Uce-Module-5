@@ -46,15 +46,26 @@ jobs:
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
-      - name: Deploy to ${{ github.event.pull_request.base.ref == 'test' && 'QA' || 'Prod' }}
+      - uses: actions/checkout@v4
+
+      - name: Copy docker-compose.yml to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ github.event.pull_request.base.ref == 'test' && secrets.AWS_HOST_QA || secrets.AWS_HOST_PROD }}
+          username: ec2-user
+          key: ${{ github.event.pull_request.base.ref == 'test' && secrets.AWS_SSH_KEY_QA || secrets.AWS_SSH_KEY_PROD }}
+          source: "docker/docker-compose.yml"
+          target: "~/"
+
+      - name: Deploy
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ github.event.pull_request.base.ref == 'test' && secrets.AWS_HOST_QA || secrets.AWS_HOST_PROD }}
           username: ec2-user
           key: ${{ github.event.pull_request.base.ref == 'test' && secrets.AWS_SSH_KEY_QA || secrets.AWS_SSH_KEY_PROD }}
           script: |
-            docker-compose -f ~/docker-compose.yml pull
-            docker-compose -f ~/docker-compose.yml up -d
+            docker-compose -f ~/docker/docker-compose.yml pull
+            docker-compose -f ~/docker/docker-compose.yml up -d
 
       - name: Transition Jira issue
         env:

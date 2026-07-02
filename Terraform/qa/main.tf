@@ -97,6 +97,14 @@ resource "aws_security_group" "ec2" {
   }
 
   ingress {
+  description = "Approval Workflow + futuros servicios"
+  from_port   = 82
+  to_port     = 89
+  protocol    = "tcp"
+  cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
     description = "Microservicios (3001-3011)"
     from_port   = 3001
     to_port     = 3011

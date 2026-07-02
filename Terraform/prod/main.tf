@@ -95,6 +95,14 @@ resource "aws_security_group" "ec2" {
   }
 
   ingress {
+  description = "Approval Workflow + futuros servicios"
+  from_port   = 82
+  to_port     = 89
+  protocol    = "tcp"
+  cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
     description = "SSH"
     from_port   = 22
     to_port     = 22
