@@ -21,7 +21,6 @@ jobs:
             [ -f "${dir}Dockerfile" ] && services+=("$(basename "$dir")")
           done
           echo "matrix=$(printf '%s\n' "${services[@]}" | jq -R -c -s 'split("\n") | map(select(length > 0)) | {include: [.[] | {service: .}]}')" >> "$GITHUB_OUTPUT"
-          echo "matrix=$(cat /tmp/matrix.json)" >> "$GITHUB_OUTPUT"
 
   build-and-push:
     needs: discover
