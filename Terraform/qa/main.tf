@@ -178,6 +178,7 @@ resource "aws_instance" "app" {
   key_name               = aws_key_pair.modulo5.key_name
   subnet_id              = aws_subnet.public.id
   vpc_security_group_ids = [aws_security_group.ec2.id]
+  lifecycle { ignore_changes = [ami, user_data] }
   
 
   user_data = <<-EOF
@@ -199,4 +200,5 @@ resource "aws_eip" "app" {
   instance = aws_instance.app.id
   domain   = "vpc"
   tags     = { Name = "modulo5-eip-${var.environment}" }
+  lifecycle { prevent_destroy = true }  # NUNCA pierde la IP
 }
