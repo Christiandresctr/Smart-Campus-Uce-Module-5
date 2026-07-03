@@ -1,0 +1,104 @@
+name: Deploy
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - dev
+      - test
+      - main
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.discover.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: discover
+        run: |
+          services=()
+          for dir in apps/*/; do
+            [ -f "${dir}Dockerfile" ] && services+=("$(basename "$dir")")
+          done
+          echo "matrix=$(printf '%s\n' "${services[@]}" | jq -R -c -s 'split("\n") | map(select(length > 0)) | {include: [.[] | {service: .}]}')" >> "$GITHUB_OUTPUT"
+
+  build-and-push:
+    needs: discover
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    strategy:
+      matrix: ${{ fromJSON(needs.discover.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: apps/${{ matrix.service }}/Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/${{ matrix.service }}:latest
+
+  deploy:
+    needs: build-and-push
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Copy docker-compose.yml to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ github.event.pull_request.base.ref == 'dev' && secrets.AWS_HOST_DEV || github.event.pull_request.base.ref == 'test' && secrets.AWS_HOST_QA || secrets.AWS_HOST_PROD }}
+          username: ec2-user
+          key: ${{ github.event.pull_request.base.ref == 'dev' && secrets.AWS_SSH_KEY_DEV || github.event.pull_request.base.ref == 'test' && secrets.AWS_SSH_KEY_QA || secrets.AWS_SSH_KEY_PROD }}
+          source: "docker/docker-compose.yml"
+          target: "~/"
+
+      - name: Deploy
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ github.event.pull_request.base.ref == 'dev' && secrets.AWS_HOST_DEV || github.event.pull_request.base.ref == 'test' && secrets.AWS_HOST_QA || secrets.AWS_HOST_PROD }}
+          username: ec2-user
+          key: ${{ github.event.pull_request.base.ref == 'dev' && secrets.AWS_SSH_KEY_DEV || github.event.pull_request.base.ref == 'test' && secrets.AWS_SSH_KEY_QA || secrets.AWS_SSH_KEY_PROD }}
+          script: |
+            cd ~/docker
+            docker-compose down --remove-orphans
+            docker-compose pull
+            docker-compose up -d
+
+      - name: Transition Jira issue
+        env:
+          JIRA_URL: ${{ secrets.JIRA_URL }}
+          JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
+          JIRA_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+          TARGET_BRANCH: ${{ github.event.pull_request.base.ref }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          ISSUE_KEY=$(echo "$PR_TITLE" | grep -oE '[A-Z][A-Z0-9]+-[0-9]+' | head -1)
+          if [ -z "$ISSUE_KEY" ]; then
+            echo "No issue key found in PR title"
+            exit 0
+          fi
+          echo "Found issue: $ISSUE_KEY"
+          
+          if [ "$TARGET_BRANCH" = "dev" ]; then
+            TRANSITION="21"
+          elif [ "$TARGET_BRANCH" = "test" ]; then
+            TRANSITION="31"
+          elif [ "$TARGET_BRANCH" = "main" ]; then
+            TRANSITION="41"
+          else
+            echo "Unknown target branch: $TARGET_BRANCH"
+            exit 0
+          fi
+          
+          echo "Transitioning to: $TRANSITION"
+          RESP=$(curl -s -o /dev/null -w "%{http_code}" -u "$JIRA_EMAIL:$JIRA_TOKEN" \
+            -X POST \
+            -H "Content-Type: application/json" \
+            "$JIRA_URL/rest/api/2/issue/$ISSUE_KEY/transitions" \
+            -d "{\"transition\": {\"id\": \"$TRANSITION\"}}")
+          echo "HTTP status: $RESP"

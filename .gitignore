@@ -4,3 +4,18 @@ dist/
 .env.local
 *.log
 .DS_Store
+
+# Terraform
+Terraform/**/.terraform/
+Terraform/**/terraform.tfstate
+Terraform/**/terraform.tfstate.backup
+Terraform/**/modulo5-key.pem
+Terraform/**/*.lock.hcl
+
+*.ps1
+*.csv
+*.xlsx
+*.txt
+!apps/report-hours/requirements.txt
+
+"Modulo 5.txt"
