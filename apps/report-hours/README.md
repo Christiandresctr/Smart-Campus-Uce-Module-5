@@ -34,4 +34,3 @@ Validación
 Cédula ecuatoriana validada con algoritmo módulo 10. Mínimo 320 horas para certificación.
 
 
-Ese es el contenido completo para el README.md. Cópialo exactamente así.
