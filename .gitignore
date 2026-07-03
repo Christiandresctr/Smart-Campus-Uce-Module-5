@@ -16,5 +16,6 @@ Terraform/**/*.lock.hcl
 *.csv
 *.xlsx
 *.txt
+!apps/report-hours/requirements.txt
 
 "Modulo 5.txt"
