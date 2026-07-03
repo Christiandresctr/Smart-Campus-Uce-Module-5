@@ -266,6 +266,7 @@ resource "aws_instance" "deploy" {
   subnet_id              = aws_subnet.public_a.id
   vpc_security_group_ids = [aws_security_group.ec2.id]
   user_data_replace_on_change = false
+  lifecycle { ignore_changes = [ami, user_data] }
 
   user_data = <<-EOF
     #!/bin/bash
@@ -286,6 +287,7 @@ resource "aws_eip" "deploy" {
   instance = aws_instance.deploy.id
   domain   = "vpc"
   tags     = { Name = "modulo5-eip-deploy-${var.environment}" }
+  lifecycle { prevent_destroy = true }
 }
 
 # Registrar EC2 fijo en el Target Group del ALB
