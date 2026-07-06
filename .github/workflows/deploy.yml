@@ -54,8 +54,8 @@ jobs:
           host: ${{ github.event.pull_request.base.ref == 'dev' && secrets.AWS_HOST_DEV || github.event.pull_request.base.ref == 'test' && secrets.AWS_HOST_QA || secrets.AWS_HOST_PROD }}
           username: ec2-user
           key: ${{ github.event.pull_request.base.ref == 'dev' && secrets.AWS_SSH_KEY_DEV || github.event.pull_request.base.ref == 'test' && secrets.AWS_SSH_KEY_QA || secrets.AWS_SSH_KEY_PROD }}
-          source: "docker/docker-compose.yml"
-          target: "~/"
+          source: "docker/"
+          target: "~/docker"
 
       - name: Deploy
         uses: appleboy/ssh-action@v1.0.3

@@ -26,8 +26,8 @@ services:
   internship-service:
     image: camaisincho/internship-service:latest
     container_name: internship-service
-    ports:
-      - "80:3001"
+    expose:
+      - "3001"
     depends_on:
       - internship-db
     environment:
@@ -42,8 +42,8 @@ services:
   document-service:
     image: camaisincho/document-service:latest
     container_name: document-service
-    ports:
-      - "81:3002"
+    expose:
+      - "3002"
     depends_on:
       - document-db
     environment:
@@ -68,8 +68,8 @@ services:
   approval-workflow:
     image: camaisincho/approval-workflow:latest
     container_name: approval-workflow
-    ports:
-      - "82:3003"
+    expose:
+      - "3003"
     depends_on:
       - approval-workflow-db
     environment:
@@ -99,12 +99,25 @@ services:
     build: ../apps/report-hours
     image: camaisincho/report-hours:latest
     container_name: report-hours
-    ports:
-      - "83:3004"
+    expose:
+      - "3004"
     depends_on:
       - report-db
     environment:
       DATABASE_URL: postgresql://user:pass@report-db:5432/report_hours_db
+    networks:
+      - modulo5-net
+
+  api-gateway:
+    build: ./nginx
+    container_name: api-gateway
+    ports:
+      - "80:80"
+    depends_on:
+      - internship-service
+      - document-service
+      - approval-workflow
+      - report-hours
     networks:
       - modulo5-net
 
