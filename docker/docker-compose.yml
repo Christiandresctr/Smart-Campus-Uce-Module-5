@@ -109,12 +109,10 @@ services:
       - modulo5-net
 
   api-gateway:
-    image: nginx:alpine
+    build: ./nginx
     container_name: api-gateway
     ports:
       - "80:80"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
       - internship-service
       - document-service
