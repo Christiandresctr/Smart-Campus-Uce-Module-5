@@ -12,6 +12,7 @@ app = FastAPI(
     title="Report Hours Service",
     description="Consolidación de horas de pasantías y generación de certificados",
     version="1.0.0",
+    root_path="/reports",
 )
 
 @app.post("/students", response_model=schemas.StudentCreate)

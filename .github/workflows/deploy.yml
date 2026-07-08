@@ -41,21 +41,36 @@ jobs:
           file: apps/${{ matrix.service }}/Dockerfile
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/${{ matrix.service }}:latest
-
+          
+      - name: Build and push api-gateway          
+        if: matrix.service == 'internship-service' 
+        uses: docker/build-push-action@v5
+        with:
+          context: ./docker/nginx
+          file: docker/nginx/Dockerfile
+          push: true
+          tags: camaisincho/api-gateway:latest
   deploy:
     needs: build-and-push
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Clean remote docker directory
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ github.event.pull_request.base.ref == 'dev' && secrets.AWS_HOST_DEV || github.event.pull_request.base.ref == 'test' && secrets.AWS_HOST_QA || secrets.AWS_HOST_PROD }}
+          username: ec2-user
+          key: ${{ github.event.pull_request.base.ref == 'dev' && secrets.AWS_SSH_KEY_DEV || github.event.pull_request.base.ref == 'test' && secrets.AWS_SSH_KEY_QA || secrets.AWS_SSH_KEY_PROD }}
+          script: sudo rm -rf ~/docker
       - name: Copy docker-compose.yml to server
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ github.event.pull_request.base.ref == 'dev' && secrets.AWS_HOST_DEV || github.event.pull_request.base.ref == 'test' && secrets.AWS_HOST_QA || secrets.AWS_HOST_PROD }}
           username: ec2-user
           key: ${{ github.event.pull_request.base.ref == 'dev' && secrets.AWS_SSH_KEY_DEV || github.event.pull_request.base.ref == 'test' && secrets.AWS_SSH_KEY_QA || secrets.AWS_SSH_KEY_PROD }}
-          source: "docker/docker-compose.yml"
-          target: "~/"
+          source: "docker"
+          target: "~"
 
       - name: Deploy
         uses: appleboy/ssh-action@v1.0.3
@@ -68,6 +83,7 @@ jobs:
             docker-compose down --remove-orphans
             docker-compose pull
             docker-compose up -d
+            docker image prune -af
 
       - name: Transition Jira issue
         env:
