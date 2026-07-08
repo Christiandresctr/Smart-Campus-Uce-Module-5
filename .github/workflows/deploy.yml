@@ -54,15 +54,15 @@ jobs:
           host: ${{ github.event.pull_request.base.ref == 'dev' && secrets.AWS_HOST_DEV || github.event.pull_request.base.ref == 'test' && secrets.AWS_HOST_QA || secrets.AWS_HOST_PROD }}
           username: ec2-user
           key: ${{ github.event.pull_request.base.ref == 'dev' && secrets.AWS_SSH_KEY_DEV || github.event.pull_request.base.ref == 'test' && secrets.AWS_SSH_KEY_QA || secrets.AWS_SSH_KEY_PROD }}
-          script: sudo rm -rf ~/docker && mkdir -p ~/docker
+          script: sudo rm -rf ~/docker
       - name: Copy docker-compose.yml to server
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ github.event.pull_request.base.ref == 'dev' && secrets.AWS_HOST_DEV || github.event.pull_request.base.ref == 'test' && secrets.AWS_HOST_QA || secrets.AWS_HOST_PROD }}
           username: ec2-user
           key: ${{ github.event.pull_request.base.ref == 'dev' && secrets.AWS_SSH_KEY_DEV || github.event.pull_request.base.ref == 'test' && secrets.AWS_SSH_KEY_QA || secrets.AWS_SSH_KEY_PROD }}
-          source: "docker/"
-          target: "~/docker"
+          source: "docker"
+          target: "~"
 
       - name: Deploy
         uses: appleboy/ssh-action@v1.0.3
