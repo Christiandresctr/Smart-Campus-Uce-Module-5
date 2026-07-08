@@ -110,6 +110,7 @@ services:
 
   api-gateway:
     build: ./nginx
+    image: camaisincho/api-gateway:latest
     container_name: api-gateway
     ports:
       - "80:80"

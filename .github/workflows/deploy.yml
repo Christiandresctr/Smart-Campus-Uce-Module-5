@@ -41,7 +41,15 @@ jobs:
           file: apps/${{ matrix.service }}/Dockerfile
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/${{ matrix.service }}:latest
-
+          
+      - name: Build and push api-gateway          
+        if: matrix.service == 'internship-service' 
+        uses: docker/build-push-action@v5
+        with:
+          context: ./docker/nginx
+          file: docker/nginx/Dockerfile
+          push: true
+          tags: camaisincho/api-gateway:latest
   deploy:
     needs: build-and-push
     if: github.event.pull_request.merged == true
