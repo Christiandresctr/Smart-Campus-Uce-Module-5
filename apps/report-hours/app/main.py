@@ -4,6 +4,8 @@ from sqlalchemy.exc import IntegrityError
 from fastapi.responses import JSONResponse
 from . import models, schemas, services
 from .database import engine, get_db
+from .cache import get_cache, set_cache
+import json
 
 
 models.Base.metadata.create_all(bind=engine)
@@ -34,12 +36,22 @@ def create_student(student: schemas.StudentCreate, db: Session = Depends(get_db)
 
 @app.get("/students/{cedula}", response_model=schemas.StudentCreate)
 def get_student(cedula: str, db: Session = Depends(get_db)):
-    return services.obtener_estudiante(db, cedula)
+    cached = get_cache(f"student:{cedula}")
+    if cached:
+        return json.loads(cached)
+    student = services.obtener_estudiante(db, cedula)
+    set_cache(f"student:{cedula}", student.model_dump_json(), ttl=300)
+    return student
 
 @app.get("/report/hours/{cedula}", response_model=schemas.HourSummary)
 def get_hours(cedula: str, db: Session = Depends(get_db)):
+    cached = get_cache(f"hours:{cedula}")
+    if cached:
+        return json.loads(cached)
     services.obtener_estudiante(db, cedula)
-    return services.get_hour_summary(db, cedula)
+    result = services.get_hour_summary(db, cedula)
+    set_cache(f"hours:{cedula}", result.model_dump_json(), ttl=300)
+    return result
 
 
 @app.post("/report/certificate", response_model=schemas.CertificateResponse)

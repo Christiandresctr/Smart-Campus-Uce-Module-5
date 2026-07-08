@@ -11,6 +11,7 @@ Terraform/**/terraform.tfstate
 Terraform/**/terraform.tfstate.backup
 Terraform/**/modulo5-key.pem
 Terraform/**/*.lock.hcl
+Terraform/**/terraform.tfstate*
 
 *.ps1
 *.csv
