@@ -22,9 +22,27 @@ jobs:
             [ -f "${dir}Dockerfile" ] && services+=("$(basename "$dir")")
           done
           echo "matrix=$(printf '%s\n' "${services[@]}" | jq -R -c -s 'split("\n") | map(select(length > 0)) | {include: [.[] | {service: .}]}')" >> "$GITHUB_OUTPUT"
+  
+  test:
+    needs: discover
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install deps
+        run: pnpm install --frozen-lockfile
+      - name: Run tests
+        run: pnpm test
 
   build-and-push:
-    needs: discover
+    needs: [discover, test]
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     strategy:
