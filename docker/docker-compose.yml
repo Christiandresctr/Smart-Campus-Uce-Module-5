@@ -121,12 +121,24 @@ services:
       - report-hours
     networks:
       - modulo5-net
+  
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - modulo5-net
 
 volumes:
   internship-data:
   document-data:
   approval-data:
   report-data:
+  redis-data:
+  
 
 networks:
   modulo5-net:

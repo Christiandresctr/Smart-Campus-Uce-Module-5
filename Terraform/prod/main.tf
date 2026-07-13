@@ -171,6 +171,13 @@ resource "aws_launch_template" "app" {
     usermod -aG docker ec2-user
     curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
     chmod +x /usr/local/bin/docker-compose
+
+    mkdir -p /home/ec2-user/docker
+    curl -o /home/ec2-user/docker/docker-compose.yml \
+      https://raw.githubusercontent.com/Christiandresctr/Smart-Campus-Uce-Module-5/main/docker/docker-compose.yml
+    cd /home/ec2-user/docker
+    docker-compose pull
+    docker-compose up -d
   EOF
   )
 
@@ -189,6 +196,7 @@ resource "aws_autoscaling_group" "app" {
   min_size            = 1
   max_size            = 2
   desired_capacity    = 1
+  health_check_grace_period = 300
 
   launch_template {
     id      = aws_launch_template.app.id
@@ -221,6 +229,13 @@ resource "aws_instance" "deploy" {
     usermod -aG docker ec2-user
     curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
     chmod +x /usr/local/bin/docker-compose
+
+    mkdir -p /home/ec2-user/docker
+    curl -o /home/ec2-user/docker/docker-compose.yml \
+      https://raw.githubusercontent.com/Christiandresctr/Smart-Campus-Uce-Module-5/main/docker/docker-compose.yml
+    cd /home/ec2-user/docker
+    docker-compose pull
+    docker-compose up -d
   EOF
 
   tags = { Name = "modulo5-ec2-deploy-${var.environment}" }
