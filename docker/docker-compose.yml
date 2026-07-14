@@ -96,7 +96,6 @@ services:
       - modulo5-net
 
   report-hours:
-    build: ../apps/report-hours
     image: camaisincho/report-hours:latest
     container_name: report-hours
     expose:
@@ -119,6 +118,12 @@ services:
       - document-service
       - approval-workflow
       - report-hours
+      - company-service
+      - audit-log-service
+      - notification-service
+      - scheduling-service
+      - evaluation-service
+      - compliance-service 
     networks:
       - modulo5-net
   
@@ -132,13 +137,171 @@ services:
     networks:
       - modulo5-net
 
+  company-db:
+    image: postgres:16-alpine
+    container_name: company-db
+    environment:
+      POSTGRES_DB: company_db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+    ports:
+      - "5435:5432"
+    volumes:
+      - company-data:/var/lib/postgresql/data
+    networks:
+      - modulo5-net
+  
+  company-service:
+    image: camaisincho/company-service:latest
+    container_name: company-service
+    expose:
+      - "3006"
+    depends_on:
+      - company-db
+    environment:
+      DB_HOST: company-db
+      DB_PORT: 5432
+      DB_USER: user
+      DB_PASSWORD: pass
+      DB_NAME: company_db
+    networks:
+      - modulo5-net
+  
+  audit-db:
+    image: mongo:7
+    container_name: audit-db
+    ports:
+      - "27018:27017"
+    volumes:
+      - audit-data:/data/db
+    networks:
+      - modulo5-net
+
+  audit-log-service:
+    image: camaisincho/audit-log-service:latest
+    container_name: audit-log-service
+    expose:
+      - "3007"
+    depends_on:
+      - audit-db
+    environment:
+      MONGO_URI: mongodb://audit-db:27017/audit_db
+    networks:
+      - modulo5-net
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - modulo5-net
+
+  notification-db:
+    image: mongo:7
+    container_name: notification-db
+    ports:
+      - "27019:27017"
+    volumes:
+      - notification-data:/data/db
+    networks:
+      - modulo5-net
+
+  notification-service:
+    image: camaisincho/notification-service:latest
+    container_name: notification-service
+    expose:
+      - "3005"
+    depends_on:
+      - notification-db
+      - rabbitmq
+    environment:
+      MONGO_URI: mongodb://notification-db:27017/notification_db
+      RABBITMQ_URI: amqp://guest:guest@rabbitmq:5672
+    networks:
+      - modulo5-net
+  
+  scheduling-db:
+    image: postgres:16-alpine
+    container_name: scheduling-db
+    environment:
+      POSTGRES_DB: scheduling_db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+    ports:
+      - "5436:5432"
+    volumes:
+      - scheduling-data:/var/lib/postgresql/data
+    networks:
+      - modulo5-net
+
+  scheduling-service:
+    image: camaisincho/scheduling-service:latest
+    container_name: scheduling-service
+    expose:
+      - "3008"
+    depends_on:
+      - scheduling-db
+    environment:
+      DB_HOST: scheduling-db
+      DB_PORT: 5432
+      DB_USER: user
+      DB_PASSWORD: pass
+      DB_NAME: scheduling_db
+    networks:
+      - modulo5-net
+  
+  evaluation-db:
+    image: postgres:16-alpine
+    container_name: evaluation-db
+    environment:
+      POSTGRES_DB: evaluation_db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+    ports:
+      - "5437:5432"
+    volumes:
+      - evaluation-data:/var/lib/postgresql/data
+    networks:
+      - modulo5-net
+
+  evaluation-service:
+    image: camaisincho/evaluation-service:latest
+    container_name: evaluation-service
+    expose:
+      - "3009"
+    depends_on:
+      - evaluation-db
+    environment:
+      DATABASE_URL: postgresql://user:pass@evaluation-db:5432/evaluation_db
+    networks:
+      - modulo5-net
+
+  compliance-service:
+    image: camaisincho/compliance-service:latest
+    container_name: compliance-service
+    expose:
+      - "3010"
+    depends_on:
+      - audit-db
+    environment:
+      MONGO_URI: mongodb://audit-db:27017/compliance_db
+    networks:
+      - modulo5-net
+
+  
 volumes:
   internship-data:
   document-data:
   approval-data:
   report-data:
   redis-data:
-  
+  company-data:
+  audit-data:
+  notification-data:
+  scheduling-data: 
+  evaluation-data:
 
 networks:
   modulo5-net:
