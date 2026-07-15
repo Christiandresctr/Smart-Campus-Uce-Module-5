@@ -5,7 +5,7 @@ app = FastAPI(
     title="Compliance Service",
     description="Compliance and policy acceptance management",
     version="1.0.0",
-    root_path="/compliance",
+    openapi_url="/compliance/openapi.json",
 )
 
 
