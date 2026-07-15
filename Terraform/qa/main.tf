@@ -88,6 +88,78 @@ resource "aws_security_group" "ec2" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  ingress {
+    description = "Document Service"
+    from_port   = 81
+    to_port     = 81
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description = "Approval Workflow + futuros servicios"
+    from_port   = 82
+    to_port     = 89
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description = "Grafana"
+    from_port   = 3000
+    to_port     = 3000
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description = "Microservicios (3001-3011)"
+    from_port   = 3001
+    to_port     = 3011
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description = "RabbitMQ AMQP"
+    from_port   = 5672
+    to_port     = 5672
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description = "Redis"
+    from_port   = 6379
+    to_port     = 6379
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description = "Prometheus"
+    from_port   = 9090
+    to_port     = 9090
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description = "Node Exporter"
+    from_port   = 9100
+    to_port     = 9100
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description = "RabbitMQ Management UI"
+    from_port   = 15672
+    to_port     = 15672
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
@@ -121,10 +193,36 @@ resource "aws_instance" "app" {
 
     mkdir -p /home/ec2-user/docker
     curl -o /home/ec2-user/docker/docker-compose.yml \
-      https://raw.githubusercontent.com/Christiandresctr/Smart-Campus-Uce-Module-5/dev/docker/docker-compose.yml
+      https://raw.githubusercontent.com/Christiandresctr/Smart-Campus-Uce-Module-5/test/docker/docker-compose.yml
     cd /home/ec2-user/docker
     docker-compose pull
     docker-compose up -d
+    
+    # === modulo5 systemd service ===
+    sudo tee /etc/systemd/system/modulo5.service <<'SYS'
+    [Unit]
+    Description=Smart Campus UCE Modulo 5
+    Requires=docker.service
+    After=docker.service
+
+    [Service]
+    Type=oneshot
+    RemainAfterExit=yes
+    WorkingDirectory=/home/ec2-user/docker
+    ExecStart=/usr/local/bin/docker-compose up -d
+    ExecStop=/usr/local/bin/docker-compose down
+    StandardOutput=journal
+
+    [Install]
+    WantedBy=multi-user.target
+    SYS
+
+    sudo systemctl enable modulo5.service
+    sudo systemctl start modulo5.service
+
+    # === cron: limpiar Docker semanalmente ===
+    echo "0 3 * * 0 docker system prune -af --volumes" | crontab -u ec2-user -
+
   EOF
 
   tags = { Name = "modulo5-ec2-${var.environment}" }
