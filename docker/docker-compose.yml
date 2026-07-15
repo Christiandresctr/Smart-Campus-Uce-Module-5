@@ -2,20 +2,25 @@ services:
   internship-db:
     image: postgres:16-alpine
     container_name: internship-db
+    restart: unless-stopped  
     environment:
       POSTGRES_DB: internship_db
       POSTGRES_USER: user
       POSTGRES_PASSWORD: pass
+      POSTGRES_HOST_AUTH_METHOD: trust
+    command: ["postgres", "-c", "hba_file=/etc/pg_hba_custom.conf"]
     ports:
       - "5432:5432"
     volumes:
       - internship-data:/var/lib/postgresql/data
+      - ./nginx/pg_hba_custom.conf:/etc/pg_hba_custom.conf:ro
     networks:
       - modulo5-net
 
   document-db:
     image: mongo:7
     container_name: document-db
+    restart: unless-stopped  
     ports:
       - "27017:27017"
     volumes:
@@ -26,6 +31,7 @@ services:
   internship-service:
     image: camaisincho/internship-service:latest
     container_name: internship-service
+    restart: unless-stopped  
     expose:
       - "3001"
     depends_on:
@@ -42,6 +48,7 @@ services:
   document-service:
     image: camaisincho/document-service:latest
     container_name: document-service
+    restart: unless-stopped  
     expose:
       - "3002"
     depends_on:
@@ -54,20 +61,25 @@ services:
   approval-workflow-db:
     image: postgres:16-alpine
     container_name: approval-workflow-db
+    restart: unless-stopped  
     environment:
       POSTGRES_DB: approval_db
       POSTGRES_USER: user
       POSTGRES_PASSWORD: pass
+      POSTGRES_HOST_AUTH_METHOD: trust
+    command: ["postgres", "-c", "hba_file=/etc/pg_hba_custom.conf"]
     ports:
       - "5433:5432"
     volumes:
       - approval-data:/var/lib/postgresql/data
+      - ./nginx/pg_hba_custom.conf:/etc/pg_hba_custom.conf:ro
     networks:
       - modulo5-net
 
   approval-workflow:
     image: camaisincho/approval-workflow:latest
     container_name: approval-workflow
+    restart: unless-stopped  
     expose:
       - "3003"
     depends_on:
@@ -84,21 +96,25 @@ services:
   report-db:
     image: postgres:16-alpine
     container_name: report-db
+    restart: unless-stopped  
     environment:
       POSTGRES_DB: report_hours_db
       POSTGRES_USER: user
       POSTGRES_PASSWORD: pass
+      POSTGRES_HOST_AUTH_METHOD: trust
+    command: ["postgres", "-c", "hba_file=/etc/pg_hba_custom.conf"]
     ports:
       - "5434:5432"
     volumes:
       - report-data:/var/lib/postgresql/data
+      - ./nginx/pg_hba_custom.conf:/etc/pg_hba_custom.conf:ro
     networks:
       - modulo5-net
 
   report-hours:
-    build: ../apps/report-hours
     image: camaisincho/report-hours:latest
     container_name: report-hours
+    restart: unless-stopped  
     expose:
       - "3004"
     depends_on:
@@ -112,6 +128,7 @@ services:
     build: ./nginx
     image: camaisincho/api-gateway:latest
     container_name: api-gateway
+    restart: unless-stopped  
     ports:
       - "80:80"
     depends_on:
@@ -119,12 +136,19 @@ services:
       - document-service
       - approval-workflow
       - report-hours
+      - company-service
+      - audit-log-service
+      - notification-service
+      - scheduling-service
+      - evaluation-service
+      - compliance-service 
     networks:
       - modulo5-net
   
   redis:
     image: redis:7-alpine
     container_name: redis
+    restart: unless-stopped  
     ports:
       - "6379:6379"
     volumes:
@@ -132,13 +156,192 @@ services:
     networks:
       - modulo5-net
 
+  company-db:
+    image: postgres:16-alpine
+    container_name: company-db
+    restart: unless-stopped  
+    environment:
+      POSTGRES_DB: company_db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+      POSTGRES_HOST_AUTH_METHOD: trust 
+    command: ["postgres", "-c", "hba_file=/etc/pg_hba_custom.conf"]
+    ports:
+      - "5435:5432"
+    volumes:
+      - company-data:/var/lib/postgresql/data
+      - ./nginx/pg_hba_custom.conf:/etc/pg_hba_custom.conf:ro
+    networks:
+      - modulo5-net
+  
+  company-service:
+    image: camaisincho/company-service:latest
+    container_name: company-service
+    restart: unless-stopped  
+    expose:
+      - "3006"
+    depends_on:
+      - company-db
+    environment:
+      DB_HOST: company-db
+      DB_PORT: 5432
+      DB_USER: user
+      DB_PASSWORD: pass
+      DB_NAME: company_db
+    networks:
+      - modulo5-net
+  
+  audit-db:
+    image: mongo:7
+    container_name: audit-db
+    restart: unless-stopped  
+    ports:
+      - "27018:27017"
+    volumes:
+      - audit-data:/data/db
+    networks:
+      - modulo5-net
+
+  audit-log-service:
+    image: camaisincho/audit-log-service:latest
+    container_name: audit-log-service
+    restart: unless-stopped  
+    expose:
+      - "3007"
+    depends_on:
+      - audit-db
+    environment:
+      MONGO_URI: mongodb://audit-db:27017/audit_db
+    networks:
+      - modulo5-net
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    restart: unless-stopped  
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - modulo5-net
+
+  notification-db:
+    image: mongo:7
+    container_name: notification-db
+    restart: unless-stopped  
+    ports:
+      - "27019:27017"
+    volumes:
+      - notification-data:/data/db
+    networks:
+      - modulo5-net
+
+  notification-service:
+    image: camaisincho/notification-service:latest
+    container_name: notification-service
+    restart: unless-stopped  
+    expose:
+      - "3005"
+    depends_on:
+      - notification-db
+      - rabbitmq
+    environment:
+      MONGO_URI: mongodb://notification-db:27017/notification_db
+      RABBITMQ_URI: amqp://guest:guest@rabbitmq:5672
+    networks:
+      - modulo5-net
+  
+  scheduling-db:
+    image: postgres:16-alpine
+    container_name: scheduling-db
+    restart: unless-stopped  
+    environment:
+      POSTGRES_DB: scheduling_db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+      POSTGRES_HOST_AUTH_METHOD: trust  
+    command: ["postgres", "-c", "hba_file=/etc/pg_hba_custom.conf"]
+    ports:
+      - "5436:5432"
+    volumes:
+      - scheduling-data:/var/lib/postgresql/data
+      - ./nginx/pg_hba_custom.conf:/etc/pg_hba_custom.conf:ro
+    networks:
+      - modulo5-net
+
+  scheduling-service:
+    image: camaisincho/scheduling-service:latest
+    container_name: scheduling-service
+    restart: unless-stopped  
+    expose:
+      - "3008"
+    depends_on:
+      - scheduling-db
+    environment:
+      DB_HOST: scheduling-db
+      DB_PORT: 5432
+      DB_USER: user
+      DB_PASSWORD: pass
+      DB_NAME: scheduling_db
+    networks:
+      - modulo5-net
+  
+  evaluation-db:
+    image: postgres:16-alpine
+    container_name: evaluation-db
+    restart: unless-stopped  
+    environment:
+      POSTGRES_DB: evaluation_db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+      POSTGRES_HOST_AUTH_METHOD: trust 
+    command: ["postgres", "-c", "hba_file=/etc/pg_hba_custom.conf"]
+    ports:
+      - "5437:5432"
+    volumes:
+      - evaluation-data:/var/lib/postgresql/data
+      - ./nginx/pg_hba_custom.conf:/etc/pg_hba_custom.conf:ro
+    networks:
+      - modulo5-net
+
+  evaluation-service:
+    image: camaisincho/evaluation-service:latest
+    container_name: evaluation-service
+    restart: unless-stopped  
+    expose:
+      - "3009"
+    depends_on:
+      - evaluation-db
+    environment:
+      DATABASE_URL: postgresql://user:pass@evaluation-db:5432/evaluation_db
+    networks:
+      - modulo5-net
+
+  compliance-service:
+    image: camaisincho/compliance-service:latest
+    container_name: compliance-service
+    restart: unless-stopped  
+    expose:
+      - "3010"
+    depends_on:
+      - audit-db
+    environment:
+      MONGO_URI: mongodb://audit-db:27017/compliance_db
+    networks:
+      - modulo5-net
+
+  
 volumes:
   internship-data:
   document-data:
   approval-data:
   report-data:
   redis-data:
-  
+  company-data:
+  audit-data:
+  notification-data:
+  scheduling-data: 
+  evaluation-data:
 
 networks:
   modulo5-net:
