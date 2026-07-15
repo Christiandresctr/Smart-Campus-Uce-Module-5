@@ -7,6 +7,7 @@ app = FastAPI(
     title="Evaluation Service",
     description="Evaluation management for internships",
     version="1.0.0",
+    root_path="/evaluations",
 )
 
 
