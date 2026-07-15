@@ -7,10 +7,13 @@ services:
       POSTGRES_DB: internship_db
       POSTGRES_USER: user
       POSTGRES_PASSWORD: pass
+      POSTGRES_HOST_AUTH_METHOD: trust
+    command: ["postgres", "-c", "hba_file=/etc/pg_hba_custom.conf"]
     ports:
       - "5432:5432"
     volumes:
       - internship-data:/var/lib/postgresql/data
+      - ./nginx/pg_hba_custom.conf:/etc/pg_hba_custom.conf:ro
     networks:
       - modulo5-net
 
@@ -63,10 +66,13 @@ services:
       POSTGRES_DB: approval_db
       POSTGRES_USER: user
       POSTGRES_PASSWORD: pass
+      POSTGRES_HOST_AUTH_METHOD: trust
+    command: ["postgres", "-c", "hba_file=/etc/pg_hba_custom.conf"]
     ports:
       - "5433:5432"
     volumes:
       - approval-data:/var/lib/postgresql/data
+      - ./nginx/pg_hba_custom.conf:/etc/pg_hba_custom.conf:ro
     networks:
       - modulo5-net
 
@@ -95,10 +101,13 @@ services:
       POSTGRES_DB: report_hours_db
       POSTGRES_USER: user
       POSTGRES_PASSWORD: pass
+      POSTGRES_HOST_AUTH_METHOD: trust
+    command: ["postgres", "-c", "hba_file=/etc/pg_hba_custom.conf"]
     ports:
       - "5434:5432"
     volumes:
       - report-data:/var/lib/postgresql/data
+      - ./nginx/pg_hba_custom.conf:/etc/pg_hba_custom.conf:ro
     networks:
       - modulo5-net
 
@@ -155,10 +164,13 @@ services:
       POSTGRES_DB: company_db
       POSTGRES_USER: user
       POSTGRES_PASSWORD: pass
+      POSTGRES_HOST_AUTH_METHOD: trust 
+    command: ["postgres", "-c", "hba_file=/etc/pg_hba_custom.conf"]
     ports:
       - "5435:5432"
     volumes:
       - company-data:/var/lib/postgresql/data
+      - ./nginx/pg_hba_custom.conf:/etc/pg_hba_custom.conf:ro
     networks:
       - modulo5-net
   
@@ -247,10 +259,13 @@ services:
       POSTGRES_DB: scheduling_db
       POSTGRES_USER: user
       POSTGRES_PASSWORD: pass
+      POSTGRES_HOST_AUTH_METHOD: trust  
+    command: ["postgres", "-c", "hba_file=/etc/pg_hba_custom.conf"]
     ports:
       - "5436:5432"
     volumes:
       - scheduling-data:/var/lib/postgresql/data
+      - ./nginx/pg_hba_custom.conf:/etc/pg_hba_custom.conf:ro
     networks:
       - modulo5-net
 
@@ -279,10 +294,13 @@ services:
       POSTGRES_DB: evaluation_db
       POSTGRES_USER: user
       POSTGRES_PASSWORD: pass
+      POSTGRES_HOST_AUTH_METHOD: trust 
+    command: ["postgres", "-c", "hba_file=/etc/pg_hba_custom.conf"]
     ports:
       - "5437:5432"
     volumes:
       - evaluation-data:/var/lib/postgresql/data
+      - ./nginx/pg_hba_custom.conf:/etc/pg_hba_custom.conf:ro
     networks:
       - modulo5-net
 
