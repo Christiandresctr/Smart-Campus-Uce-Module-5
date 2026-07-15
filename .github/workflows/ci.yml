@@ -37,16 +37,24 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Install, build, test
+      - name: Install and build
         run: |
           cd "apps/${{ matrix.service }}"
           if [ -f package.json ]; then
             pnpm install
             pnpm run build
-            pnpm test || true
           elif [ -f requirements.txt ]; then
             pip install -r requirements.txt
-            pytest || true
+          fi
+
+      - name: Run unit tests
+        run: |
+          cd "apps/${{ matrix.service }}"
+          if [ -f package.json ]; then
+            pnpm test
+          elif [ -f requirements.txt ]; then
+            pip install pytest httpx
+            pytest tests/ -v
           fi
   
   jira-transition:
