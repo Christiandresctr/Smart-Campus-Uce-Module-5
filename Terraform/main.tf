@@ -129,6 +129,31 @@ resource "aws_instance" "app" {
     cd /home/ec2-user/docker
     docker-compose pull
     docker-compose up -d
+
+    # === modulo5 systemd service ===
+    sudo tee /etc/systemd/system/modulo5.service <<'SYS'
+    [Unit]
+    Description=Smart Campus UCE Modulo 5
+    Requires=docker.service
+    After=docker.service
+
+    [Service]
+    Type=oneshot
+    RemainAfterExit=yes
+    WorkingDirectory=/home/ec2-user/docker
+    ExecStart=/usr/local/bin/docker-compose up -d
+    ExecStop=/usr/local/bin/docker-compose down
+    StandardOutput=journal
+
+    [Install]
+    WantedBy=multi-user.target
+    SYS
+
+    sudo systemctl enable modulo5.service
+    sudo systemctl start modulo5.service
+
+    # === cron: limpiar Docker semanalmente ===
+    echo "0 3 * * 0 docker system prune -af --volumes" | crontab -u ec2-user -
   EOF
 
   tags = { Name = "modulo5-ec2-${var.environment}" }

@@ -96,6 +96,7 @@ jobs:
           host: ${{ github.event.pull_request.base.ref == 'dev' && secrets.AWS_HOST_DEV || github.event.pull_request.base.ref == 'test' && secrets.AWS_HOST_QA || secrets.AWS_HOST_PROD }}
           username: ec2-user
           key: ${{ github.event.pull_request.base.ref == 'dev' && secrets.AWS_SSH_KEY_DEV || github.event.pull_request.base.ref == 'test' && secrets.AWS_SSH_KEY_QA || secrets.AWS_SSH_KEY_PROD }}
+          
           script: |
             cd ~/docker
             docker-compose down --remove-orphans
