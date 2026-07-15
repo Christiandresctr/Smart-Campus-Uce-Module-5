@@ -19,10 +19,59 @@ jobs:
 
   test-python:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [report-hours, compliance-service, evaluation-service]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
-      - run: pip install -r apps/report-hours/requirements.txt
+      - run: pip install -r apps/${{ matrix.service }}/requirements.txt
       - run: pip install pytest httpx
-      - run: pytest apps/report-hours/tests/ -v
+      - run: pytest apps/${{ matrix.service }}/tests/ -v
+
+  test-e2e:
+    runs-on: ubuntu-latest
+    needs: [test-nestjs]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: pnpm install --frozen-lockfile
+      - name: Run E2E tests (company-service)
+        run: cd apps/company-service && pnpm run test:e2e
+      - name: Run E2E tests (internship-service)
+        run: cd apps/internship-service && pnpm run test:e2e
+      - name: Run E2E tests (approval-workflow)
+        run: cd apps/approval-workflow && pnpm run test:e2e
+      - name: Run E2E tests (notification-service)
+        run: cd apps/notification-service && pnpm run test:e2e
+      - name: Run E2E tests (scheduling-service)
+        run: cd apps/scheduling-service && pnpm run test:e2e
+      - name: Run E2E tests (audit-log-service)
+        run: cd apps/audit-log-service && pnpm run test:e2e
+      - name: Run E2E tests (document-service)
+        run: cd apps/document-service && pnpm run test:e2e
+
+  load-test:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install k6
+        run: |
+          sudo gpg -k
+          sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D68
+          echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+          sudo apt-get update
+          sudo apt-get install k6
+      - name: Run load test (internship)
+        run: k6 run tests/load/k6-internship.js
+        continue-on-error: true
+      - name: Run load test (company)
+        run: k6 run tests/load/k6-company.js
+        continue-on-error: true
+      - name: Run load test (report-hours)
+        run: k6 run tests/load/k6-report-hours.js
+        continue-on-error: true

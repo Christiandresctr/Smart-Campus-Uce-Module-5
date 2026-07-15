@@ -1,109 +1,163 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# approval-workflow
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Microservicio de flujo de aprobacion multinivel para practicas preprofesionales.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Stack
 
-## Description
+- **Framework**: NestJS 11
+- **ORM**: TypeORM
+- **Base de datos**: PostgreSQL 16
+- **Message Broker**: RabbitMQ
+- **PDF**: PDFKit (con Chromium)
+- **Documentacion**: Swagger/OpenAPI
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Puerto
 
-## Project setup
+- **Desarrollo**: 3003
+- **Docker**: 3003 (interno)
 
-```bash
-$ pnpm install
+## Endpoints
+
+| Metodo | Endpoint | Descripcion |
+|---|---|---|
+| POST | /api/v1/approval/start | Iniciar flujo de aprobacion |
+| GET | /api/v1/approval | Listar todas las aprobaciones |
+| GET | /api/v1/approval/:id | Obtener aprobacion por ID |
+| GET | /api/v1/approval/status/:internshipId | Estado por practica |
+| PUT | /api/v1/approval/:id/approve | Aprobar (avanza al siguiente paso) |
+| PUT | /api/v1/approval/:id/reject | Rechazar |
+
+## Swagger
+
+```
+http://localhost:3003/api/docs
 ```
 
-## Compile and run the project
+## Variables de Entorno
 
-```bash
-# development
-$ pnpm run start
-
-# watch mode
-$ pnpm run start:dev
-
-# production mode
-$ pnpm run start:prod
+```env
+DB_HOST=localhost
+DB_PORT=5432
+DB_USER=user
+DB_PASSWORD=pass
+DB_NAME=approval_db
+RABBITMQ_URI=amqp://guest:guest@localhost:5672
 ```
 
-## Run tests
+## Ejecutar
 
 ```bash
-# unit tests
-$ pnpm run test
+# Instalar dependencias
+pnpm install
 
-# e2e tests
-$ pnpm run test:e2e
+# Desarrollo
+pnpm run start:dev
 
-# test coverage
-$ pnpm run test:cov
+# Produccion
+pnpm run start:prod
 ```
 
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-### 🚀 Microservicio 3: approval-workflow
-
-Stack: NestJS + TypeORM + PostgreSQL + RabbitMQ
-Puerto: 3003 (expuesto como 82)
-Swagger: /api/docs
-Endpoints:
-- POST /api/v1/approval/start
-- PUT /api/v1/approval/:id/approve
-- PUT /api/v1/approval/:id/reject
-- GET /api/v1/approval/status/:internshipId
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+## Tests
 
 ```bash
-$ pnpm install -g @nestjs/mau
-$ mau deploy
+# Unit tests
+pnpm run test
+
+# E2E tests
+pnpm run test:e2e
+
+# Coverage
+pnpm run test:cov
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+## Docker
 
-## Resources
+```bash
+# Solo el servicio
+docker build -t approval-workflow .
 
-Check out a few resources that may come in handy when working with NestJS:
+# Con Docker Compose (desde la raiz)
+docker compose -f docker/docker-compose.yml up approval-workflow
+```
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+## Flujo de Aprobacion
 
-## Support
+```mermaid
+stateDiagram-v2
+    [*] --> tutor_pending : Iniciar flujo
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+    tutor_pending --> coordinator_pending : Tutor aprueba
+    tutor_pending --> rejected : Tutor rechaza
 
-## Stay in touch
+    coordinator_pending --> dean_pending : Coordinador aprueba
+    coordinator_pending --> rejected : Coordinador rechaza
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+    dean_pending --> approved : Decano aprueba
+    dean_pending --> rejected : Decano rechaza
 
-## License
+    rejected --> tutor_pending : Reenviar
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+    approved --> [*]
+```
+
+### Pasos
+
+1. **Tutor** (1er nivel): Revisa la solicitud del estudiante asignado
+2. **Coordinador** (2do nivel): Revisa todas las solicitudes de su carrera
+3. **Decano** (nivel final): Aprobacion final de la facultad
+
+### Estados
+
+| Estado | Descripcion |
+|---|---|
+| pending | Esperando revision en el paso actual |
+| approved | Aprobado en todos los pasos |
+| rejected | Rechazado en algun paso |
+
+## Entidades
+
+### Approval
+
+| Campo | Tipo | Descripcion |
+|---|---|---|
+| id | UUID | Identificador unico |
+| internship_id | UUID | ID de la practica asociada |
+| current_step | Enum | tutor, coordinator, dean |
+| status | Enum | pending, approved, rejected |
+| signatures | JSONB | Firmas digitales por paso |
+| metadata | JSONB | Datos adicionales |
+| created_at | Timestamp | Fecha de creacion |
+| updated_at | Timestamp | Fecha de actualizacion |
+
+### Estructura de signatures
+
+```json
+{
+  "tutor": {
+    "signed_at": "2026-07-14T10:00:00Z",
+    "comment": "Aprobado por tutor"
+  },
+  "coordinator": {
+    "signed_at": "2026-07-14T11:00:00Z",
+    "comment": "Aprobado por coordinador"
+  },
+  "dean": {
+    "signed_at": "2026-07-14T12:00:00Z",
+    "comment": "Aprobado por decano"
+  }
+}
+```
+
+## RabbitMQ
+
+- **Exchange**: `notifications` (topic)
+- **Routing Key**: `notification.{userId}`
+- **Eventos publicados**: Cuando un paso se aprueba o rechaza, se publica un evento para notificar al siguiente aprobador
+
+## PDF Generation
+
+El servicio genera PDFs con PDFKit para documentos de aprobacion. Requiere Chromium instalado en el contenedor Docker.
+
+## Licencia
+
+Proyecto academico — Universidad Central del Ecuador.

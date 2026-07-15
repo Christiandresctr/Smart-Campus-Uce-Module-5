@@ -175,6 +175,11 @@ resource "aws_launch_template" "app" {
     mkdir -p /home/ec2-user/docker
     curl -o /home/ec2-user/docker/docker-compose.yml \
       https://raw.githubusercontent.com/Christiandresctr/Smart-Campus-Uce-Module-5/main/docker/docker-compose.yml
+    mkdir -p /home/ec2-user/docker/nginx
+    curl -o /home/ec2-user/docker/nginx/pg_hba_custom.conf \
+      https://raw.githubusercontent.com/Christiandresctr/Smart-Campus-Uce-Module-5/main/docker/nginx/pg_hba_custom.conf
+    curl -o /home/ec2-user/docker/nginx/nginx.conf \
+      https://raw.githubusercontent.com/Christiandresctr/Smart-Campus-Uce-Module-5/main/docker/nginx/nginx.conf
     cd /home/ec2-user/docker
     docker-compose pull
     docker-compose up -d
@@ -259,6 +264,11 @@ resource "aws_instance" "deploy" {
     mkdir -p /home/ec2-user/docker
     curl -o /home/ec2-user/docker/docker-compose.yml \
       https://raw.githubusercontent.com/Christiandresctr/Smart-Campus-Uce-Module-5/main/docker/docker-compose.yml
+    mkdir -p /home/ec2-user/docker/nginx
+    curl -o /home/ec2-user/docker/nginx/pg_hba_custom.conf \
+      https://raw.githubusercontent.com/Christiandresctr/Smart-Campus-Uce-Module-5/main/docker/nginx/pg_hba_custom.conf
+    curl -o /home/ec2-user/docker/nginx/nginx.conf \
+      https://raw.githubusercontent.com/Christiandresctr/Smart-Campus-Uce-Module-5/main/docker/nginx/nginx.conf
     cd /home/ec2-user/docker
     docker-compose pull
     docker-compose up -d
